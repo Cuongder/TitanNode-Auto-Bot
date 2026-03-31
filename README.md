@@ -15,29 +15,37 @@ An automatic bot to connect to the Titan Network node extension and earn points 
 
 ---
 
-## ⚙️ Installation
+## ⚙️ Installation on VPS (Ubuntu)
 
-1.  **Clone the Repository**
-    ```bash
-    git clone [https://github.com/vikitoshi/TitanNode-Auto-Bot.git](https://github.com/vikitoshi/TitanNode-Auto-Bot.git)
-    cd TitanNode-Auto-Bot
-    ```
+### 1. Install Node.js
 
-2.  **Install Dependencies**
-    Make sure you have [Node.js](https://nodejs.org/) version 18 or higher.
-    ```bash
-    npm install
-    ```
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+node -v  # Confirm v18+
+```
 
----
+### 2. Clone the Repository
 
-## 🔧 Configuration
+```bash
+git clone https://github.com/Cuongder/TitanNode-Auto-Bot.git
+cd TitanNode-Auto-Bot
+```
 
-Before running the bot, you need to complete the following configuration:
+### 3. Install Dependencies
 
-### 1. Login Credentials (`.env`) — Recommended
+```bash
+npm install
+```
 
-Add your Titan Network email and password to the `.env` file. The bot will automatically login and obtain tokens when needed.
+### 4. Configure
+
+```bash
+cp .env.example .env   # Or create .env manually
+nano .env
+```
+
+Add your credentials:
 
 ```env
 USER_ID=your_email@gmail.com
@@ -46,63 +54,52 @@ PASS=your_password
 
 > With this setup, the bot will **automatically re-login** whenever the token expires, so it can run 24/7 without manual intervention.
 
-### 2. Refresh Token (`.env`) — Optional
+(Optional) Add proxies:
 
-You can optionally provide a `REFRESH_TOKEN`. The bot will try to use it first. If it expires, the bot falls back to login with `USER_ID`/`PASS` and saves the new refresh token back to `.env` automatically.
-
-```env
-REFRESH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```bash
+nano proxies.txt
 ```
 
-> **How to get `REFRESH_TOKEN`**: Log in to the [Titan Dashboard](https://edge.titannet.info/signup?inviteCode=X3X2TJ3A), open Developer Tools (F12) -> Application -> Local Storage, find `titan-edge-user-info`, and copy the value from `refresh_token`.
+```txt
+# Format: http://[user:password@]host:port
+http://user1:pass1@proxy1.com:8080
+socks5://user3:pass3@proxy3.com:1080
+```
 
-### 3. Proxies (`proxies.txt`) — Optional
+### 5. Install PM2 & Run
 
-If you want to use proxies:
+```bash
+npm install -g pm2
+pm2 start index.js --name "titan-bot"
+pm2 startup    # Auto-start on system boot
+pm2 save       # Save current process list
+```
 
-1.  Create a `proxies.txt` file in the main directory.
-2.  Enter your proxy list, one proxy per line. The bot will create a connection for each proxy listed.
-    ```txt
-    # Format: http://[user:password@]host:port
-    http://user1:pass1@proxy1.com:8080
-    http://user2:pass2@proxy2.com:8080
-    socks5://user3:pass3@proxy3.com:1080
-    ```
-    If the `proxies.txt` file is empty or does not exist, the bot will run in direct mode (without proxies).
+### PM2 Useful Commands
+
+| Command | Description |
+|---|---|
+| `pm2 logs titan-bot` | View logs |
+| `pm2 stop titan-bot` | Stop the bot |
+| `pm2 restart titan-bot` | Restart the bot |
+| `pm2 status` | Check bot status |
+| `pm2 monit` | Monitor CPU/RAM |
 
 ---
 
-## 🚀 Running the Bot
+## 🔄 Update to Latest Version
 
-### Regular Run
-
-After the configuration is complete, run the bot with the following command:
+When a new version is available, run these commands on your VPS:
 
 ```bash
-npm start
+cd ~/TitanNode-Auto-Bot
+pm2 stop titan-bot
+git pull origin main
+npm install
+pm2 restart titan-bot
 ```
 
-### Running with PM2 (Background Execution)
-
-To keep the bot running in the background and automatically restart upon system reboots, you can use PM2:
-
-1.  **Install PM2 globally** (if you haven't already):
-    ```bash
-    npm install -g pm2
-    ```
-
-2.  **Start the bot with PM2**:
-    ```bash
-    pm2 start index.js --name "titan-bot"
-    ```
-
-3.  **Useful Commands**:
-    - View logs: `pm2 logs titan-bot`
-    - Stop the bot: `pm2 stop titan-bot`
-    - Restart the bot: `pm2 restart titan-bot`
-    - Start automatically on system boot: `pm2 startup` and `pm2 save`
-
-The bot will start the connection, display the status, and begin collecting points for you.
+> **Note:** Your `.env` and `proxies.txt` files will NOT be overwritten during update (they are in `.gitignore`).
 
 ---
 
